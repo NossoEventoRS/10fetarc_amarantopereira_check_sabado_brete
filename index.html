@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Conferência de Cartão — GRUPO | BRETE</title>
+<style>
+:root{
+    --laranja: #48db7e;
+    --laranja-escuro: #166534;
+    --laranja-claro: #fff3e0;
+    --preto: #1a1a1a;
+    --vermelho: #dc2626;
+    --amarelo: #facc15;
+    --verde: #16a34a;
+}
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{
+    margin:0; height:100%;
+    font-family: Arial, sans-serif;
+    background: var(--laranja);
+    color:#000;
+    overscroll-behavior:none;
+}
+
+/* ---------- TELA DE SENHA ---------- */
+#tela-login{
+    position:fixed; inset:0;
+    background: var(--laranja);
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:16px; padding:24px; z-index:100;
+}
+#tela-login img{ width:70px; margin-bottom:4px; }
+#tela-login h1{ font-size:18px; text-align:center; margin:0; color:var(--preto); }
+#tela-login form{ display:flex; flex-direction:column; gap:10px; width:100%; max-width:280px; }
+#tela-login input{
+    padding:14px; font-size:18px; border:2px solid var(--laranja-escuro);
+    border-radius:8px; text-align:center; letter-spacing:2px;
+}
+#tela-login button{
+    padding:14px; font-size:16px; font-weight:bold; background:var(--laranja-escuro);
+    color:#fff; border:none; border-radius:8px; cursor:pointer;
+}
+#erro-login{ color:#7f1d1d; font-size:13px; font-weight:bold; min-height:16px; }
+
+/* ---------- APP ---------- */
+#app{ display:none; height:100%; flex-direction:column; }
+body.logado #app{ display:flex; }
+body.logado #tela-login{ display:none; }
+
+#header{
+    flex-shrink:0; background:var(--laranja-escuro); color:#fff;
+    padding:10px 14px; display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+}
+#header .titulo{ font-size:14px; font-weight:bold; line-height:1.2; }
+#header .titulo small{ display:block; font-weight:normal; opacity:0.85; font-size:11px; }
+#btn-sair{
+    background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.4);
+    color:#fff; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;
+}
+
+#abas{
+    flex-shrink:0; display:flex; background:#fff3e0; overflow-x:auto;
+    border-bottom:2px solid var(--laranja-escuro);
+}
+.aba-btn{
+    flex:1 0 auto; min-width:110px; text-align:center; padding:12px 10px;
+    font-size:13px; font-weight:bold; background:none; border:none; cursor:pointer;
+    color:var(--laranja-escuro); border-bottom:3px solid transparent; white-space:nowrap;
+}
+.aba-btn.ativa{ border-bottom:3px solid var(--laranja-escuro); background:#ffe1b8; }
+
+#barra-busca{
+    flex-shrink:0; padding:10px; background:#fff; border-bottom:1px solid #eee;
+    display:flex; gap:8px;
+}
+#busca{
+    flex:1; padding:12px; font-size:15px; border:2px solid #ddd; border-radius:8px;
+}
+#busca:focus{ border-color:var(--laranja-escuro); outline:none; }
+#status-conexao{ font-size:10px; text-align:center; padding:2px; color:#888; background:#fff; }
+#status-conexao.erro{ color:#b91c1c; font-weight:bold; }
+
+#lista{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:8px; }
+.item{
+    background:#fff; border:1px solid #eee; border-left:6px solid #ccc;
+    border-radius:8px; padding:10px 12px; margin-bottom:8px; cursor:pointer;
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+}
+.item.st-npresente{ border-left-color:var(--vermelho); }
+.item.st-aguardando{ border-left-color:var(--amarelo); }
+.item.st-concluido{ border-left-color:var(--verde); }
+.item-info{ min-width:0; }
+.item-nome{ font-weight:bold; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.item-sub{ font-size:12px; color:#666; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.item-badge{
+    font-size:10px; font-weight:bold; padding:4px 8px; border-radius:12px; flex-shrink:0;
+    color:#fff; white-space:nowrap;
+}
+.badge-npresente{ background:var(--vermelho); }
+.badge-aguardando{ background:var(--amarelo); color:#000; }
+.badge-concluido{ background:var(--verde); }
+
+#vazio{ text-align:center; color:#a15c00; padding:40px 20px; font-size:14px; }
+
+/* ---------- LEGENDA ---------- */
+#legenda{
+    flex-shrink:0; display:flex; justify-content:center; gap:14px; padding:6px;
+    background:#fff3e0; font-size:10px; font-weight:bold; text-transform:uppercase;
+    border-top:1px solid rgba(194,65,12,0.2);
+}
+.leg-item{ display:flex; align-items:center; gap:4px; }
+.leg-ponto{ width:10px; height:10px; border-radius:50%; }
+
+/* ---------- MODAL DE DETALHE ---------- */
+#overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.5); display:none;
+    align-items:flex-end; justify-content:center; z-index:50;
+}
+#overlay.aberto{ display:flex; }
+#modal{
+    background:#fff; width:100%; max-width:480px; border-radius:16px 16px 0 0;
+    padding:20px; max-height:88vh; overflow-y:auto;
+}
+#modal h2{ margin:0 0 2px 0; font-size:18px; }
+#modal .sub{ color:#666; font-size:13px; margin-bottom:14px; }
+.campo{ display:flex; justify-content:space-between; font-size:13px; padding:6px 0; border-bottom:1px dashed #eee; }
+.campo b{ color:#555; }
+.botoes-status{ display:flex; gap:8px; margin-top:16px; }
+.botoes-status button{
+    flex:1; padding:14px 4px; border:none; border-radius:8px; font-weight:bold;
+    font-size:12px; color:#fff; cursor:pointer; text-transform:uppercase;
+}
+.bt-npresente{ background:var(--vermelho); }
+.bt-aguardando{ background:var(--amarelo); color:#000; }
+.bt-concluido{ background:var(--verde); }
+.botoes-status button.selecionado{ outline:3px solid var(--preto); outline-offset:2px; }
+#fechar-modal{
+    display:block; width:100%; margin-top:14px; padding:12px; background:#eee;
+    border:none; border-radius:8px; font-weight:bold; cursor:pointer;
+}
+#lista-integrantes{ margin-top:14px; border-top:2px solid #f0f0f0; padding-top:10px; }
+.integrante-row{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:8px 0; border-bottom:1px solid #f5f5f5; font-size:12px;
+}
+.integrante-row .nome{ font-weight:bold; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mini-botoes{ display:flex; gap:4px; flex-shrink:0; }
+.mini-botoes button{ width:26px; height:26px; border-radius:50%; border:2px solid #fff; cursor:pointer; }
+.mini-botoes button.ativo{ border-color:var(--preto); }
+
+#toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(100px);
+    background:var(--preto); color:#fff; padding:12px 20px; border-radius:24px;
+    font-size:13px; font-weight:bold; z-index:200; transition:transform .25s ease; text-align:center;
+}
+#toast.mostrar{ transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ===================== TELA DE SENHA ===================== -->
+<div id="tela-login">
+    <img
+    src="https://raw.githubusercontent.com/NossoEventoRS/Imagens/refs/heads/main/Logo.png" style="width:20%; height:auto; object-fit:contain;">
+    <h1>Conferência de Cartão<br><P>BRETE</P><small style="font-weight:normal;">Acesso restrito à equipe</small></h1>
+    <form id="form-login">
+        <input type="password" id="input-senha" placeholder="Senha de acesso" inputmode="numeric" autocomplete="off">
+        <div id="erro-login"></div>
+        <button type="submit">Entrar</button>
+    </form>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="app">
+    <div id="header">
+         <div class="titulo">Conferência de Cartão | SÁBADO 22/08/2026 | BRETE
+            <small>10ª FETARC | CTG Amaranto Pererita - 1ª RT - Alvorada / RS</small>
+        </div>
+        <button id="btn-sair">Sair</button>
+    </div>
+
+    <div id="abas"></div>
+
+    <div id="barra-busca">
+        <input id="busca" type="text" placeholder="Buscar por cartão, nome ou entidade...">
+    </div>
+    <div id="status-conexao">Carregando dados...</div>
+
+    <div id="lista"></div>
+
+    <div id="legenda">
+        <div class="leg-item"><div class="leg-ponto" style="background:var(--vermelho)"></div>Não presente</div>
+        <div class="leg-item"><div class="leg-ponto" style="background:var(--amarelo)"></div>Check-in feito</div>
+        <div class="leg-item"><div class="leg-ponto" style="background:var(--verde)"></div>Concluído</div>
+    </div>
+</div>
+
+<!-- ===================== MODAL ===================== -->
+<div id="overlay">
+    <div id="modal"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =========================================================================
+   CONFIGURAÇÃO — ajuste aqui para o seu evento
+   ========================================================================= */
+
+// Mesma URL do Apps Script usada no painel.html (precisa aceitar POST também,
+// veja o código .gs fornecido junto com este arquivo).
+const URL_API = "https://script.google.com/macros/s/AKfycbwXelxU7JHk5Clra61BgFO6M4RoTi8zGfdToDwNm_B4SP5OLlBGtC5xUJPGegCSXQSZ/exec";
+
+// Senha única da equipe. Troque para a senha real do evento.
+const SENHA_ACESSO = "brete2026";
+
+// Abas do painel: "Rótulo mostrado" -> "Nome exato da aba na planilha Google".
+const MODALIDADES = {
+    "Grupo": "Grupo"
+};
+
+/* ========================================================================= */
+
+let dadosGlobais = {};
+let abaAtiva = Object.keys(MODALIDADES)[0];
+let itemAberto = null; // { linha do item clicado }
+
+// ---------- LOGIN ----------
+if (sessionStorage.getItem("checkin_auth") === "ok") {
+    document.body.classList.add("logado");
+}
+
+document.getElementById("form-login").addEventListener("submit", function(e){
+    e.preventDefault();
+    const val = document.getElementById("input-senha").value;
+    if (val === SENHA_ACESSO) {
+        sessionStorage.setItem("checkin_auth", "ok");
+        document.body.classList.add("logado");
+        iniciar();
+    } else {
+        document.getElementById("erro-login").innerText = "Senha incorreta. Tente novamente.";
+        document.getElementById("input-senha").value = "";
+    }
+});
+
+document.getElementById("btn-sair").addEventListener("click", function(){
+    sessionStorage.removeItem("checkin_auth");
+    document.body.classList.remove("logado");
+});
+
+// ---------- UTIL ----------
+function normalizar(txt){
+    return String(txt || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function pegar(obj, nomes){
+    for (const n of nomes){
+        for (const k in obj){
+            if (normalizar(k) === normalizar(n)) return obj[k];
+        }
+    }
+    return "";
+}
+
+function classeStatus(status){
+    const s = normalizar(status);
+    if (s.includes("nao presente")) return "npresente";
+    if (s.includes("concluido")) return "concluido";
+    if (s === "") return "";
+    return "aguardando"; // qualquer outro texto (ex: check-in realizado) cai aqui
+}
+
+function mostrarToast(msg){
+    const t = document.getElementById("toast");
+    t.innerText = msg;
+    t.classList.add("mostrar");
+    setTimeout(()=> t.classList.remove("mostrar"), 2200);
+}
+
+// ---------- ABAS ----------
+function montarAbas(){
+    const cont = document.getElementById("abas");
+    cont.innerHTML = "";
+    Object.keys(MODALIDADES).forEach(rotulo => {
+        const btn = document.createElement("button");
+        btn.className = "aba-btn" + (rotulo === abaAtiva ? " ativa" : "");
+        btn.innerText = rotulo;
+        btn.onclick = () => { abaAtiva = rotulo; montarAbas(); renderizarLista(); };
+        cont.appendChild(btn);
+    });
+}
+
+// ---------- CARREGAR DADOS ----------
+function carregarDados(mostrarLoading){
+    const statusEl = document.getElementById("status-conexao");
+    if (mostrarLoading) statusEl.innerText = "Carregando dados...";
+
+    const controle = new AbortController();
+    const tempoLimite = setTimeout(() => controle.abort(), 12000); // não trava esperando pra sempre
+
+    fetch(URL_API, { signal: controle.signal })
+        .then(r => r.json())
+        .then(resp => {
+            clearTimeout(tempoLimite);
+            dadosGlobais = resp;
+            statusEl.classList.remove("erro");
+            const agora = new Date();
+            statusEl.innerText = "Atualizado às " + agora.toLocaleTimeString("pt-BR");
+            renderizarLista();
+        })
+        .catch(err => {
+            clearTimeout(tempoLimite);
+            statusEl.classList.add("erro");
+            statusEl.innerText = (err.name === "AbortError")
+                ? "Google demorou pra responder — tentando de novo..."
+                : "Falha ao carregar dados. Verifique a internet.";
+            console.error(err);
+        });
+}
+
+// ---------- LISTA ----------
+function itensDaAbaAtiva(){
+    const nomeAba = MODALIDADES[abaAtiva];
+    return dadosGlobais[nomeAba] || [];
+}
+
+// A aba "Grupo" já chega pré-agrupada do Apps Script: uma linha por
+// entidade, com Ordem, Categoria, Entidade, RT, Status, Integrantes e
+// _row (a linha da planilha que guarda o Status real daquele grupo).
+function ehGrupo(){
+    return normalizar(abaAtiva).includes("grupo");
+}
+
+// A aba "Dança PAR" vem com prenda e peão separados em campos próprios
+// (NomePrenda, NomePeao, CartaoPrenda, CartaoPeao, NascimentoPrenda,
+// NascimentoPeao, Musica), já tratados pelo Apps Script.
+function ehDancaPar(){
+    return normalizar(abaAtiva).includes("danca par");
+}
+
+// Junta todos os campos de texto relevantes do item num único texto
+// normalizado, pra busca funcionar em qualquer formato de aba.
+function textoBuscaItem(l){
+    return normalizar([
+        pegar(l, ["Nomes","Nome","Concorrente"]),
+        pegar(l, ["NomePrenda"]),
+        pegar(l, ["NomePeao"]),
+        pegar(l, ["Entidade"]),
+        pegar(l, ["Cartão","Cartao"]),
+        pegar(l, ["CartaoPrenda"]),
+        pegar(l, ["CartaoPeao"])
+    ].join(" "));
+}
+
+function renderizarLista(){
+    const lista = document.getElementById("lista");
+    const termo = normalizar(document.getElementById("busca").value);
+    let itens = itensDaAbaAtiva();
+
+    if (termo){
+        itens = itens.filter(l => textoBuscaItem(l).includes(termo));
+    }
+
+    lista.innerHTML = "";
+    if (itens.length === 0){
+        lista.innerHTML = `<div id="vazio">${ehGrupo() ? "Nenhum grupo encontrado." : "Nenhum concorrente encontrado."}</div>`;
+        return;
+    }
+
+    itens.forEach(l => {
+        const status = pegar(l, ["Status"]);
+        const cls = classeStatus(status);
+        const ordem = pegar(l, ["Ordem"]);
+        const entidade = pegar(l, ["Entidade"]);
+        let nomePrincipal;
+        if (ehGrupo()) nomePrincipal = entidade;
+        else if (ehDancaPar()) nomePrincipal = `${pegar(l,["NomePrenda"])} & ${pegar(l,["NomePeao"])}`;
+        else nomePrincipal = pegar(l, ["Nomes","Nome","Concorrente"]);
+        const subtitulo = ehGrupo() ? `${pegar(l,["Integrantes"])} integrantes` : entidade;
+
+        const div = document.createElement("div");
+        div.className = "item st-" + cls;
+        div.innerHTML = `
+            <div class="item-info">
+                <div class="item-nome">${ordem ? ordem + " · " : ""}${nomePrincipal}</div>
+                <div class="item-sub">${subtitulo}</div>
+            </div>
+            <div class="item-badge badge-${cls || 'aguardando'}">${status || "—"}</div>
+        `;
+        div.onclick = () => abrirDetalhe(l);
+        lista.appendChild(div);
+    });
+}
+
+document.getElementById("busca").addEventListener("input", renderizarLista);
+
+// ---------- MODAL DE DETALHE ----------
+function listaIntegrantesHtml(item){
+    const membros = item.IntegrantesLista || [];
+    if (membros.length === 0) return "";
+    return membros.map(m => `
+        <div class="integrante-row">
+            <div class="nome">${m.Nome || ""}</div>
+            <div style="font-size:11px; color:#777; text-align:right; flex-shrink:0;">
+                ${m.Cartao ? "Cartão " + m.Cartao : ""}${m.Nascimento ? " · " + m.Nascimento : ""}${m.Municipio ? " · " + m.Municipio : ""}
+            </div>
+        </div>
+    `).join("");
+}
+
+function abrirDetalhe(item){
+    itemAberto = item;
+    const nomeAba = MODALIDADES[abaAtiva];
+    const status = pegar(item, ["Status"]);
+    const cls = classeStatus(status);
+    const grupo = ehGrupo();
+    const dancaPar = ehDancaPar();
+
+    let titulo, corpo;
+
+    if (grupo){
+        titulo = pegar(item,["Entidade"]);
+        corpo = `
+            <div class="campo"><span>Integrantes</span><b>${pegar(item,["Integrantes"])}</b></div>
+            <div class="campo"><span>RT</span><b>${pegar(item,["RT"])}</b></div>
+            <div class="campo"><span>Danças</span><b style="text-align:right;">${[pegar(item,["Danca_1"]),pegar(item,["Danca_2"]),pegar(item,["Danca_3"])].filter(Boolean).join(" · ")}</b></div>
+            <div id="lista-integrantes"><div style="font-size:11px; font-weight:bold; color:#a15c00; text-transform:uppercase; margin-bottom:4px;">Integrantes</div>${listaIntegrantesHtml(item)}</div>
+        `;
+    } else if (dancaPar){
+        titulo = `${pegar(item,["NomePrenda"])} & ${pegar(item,["NomePeao"])}`;
+        corpo = `
+            <div class="campo"><span>Entidade</span><b>${pegar(item,["Entidade"])}</b></div>
+            <div class="campo"><span>Município</span><b>${pegar(item,["Municipio","Município"])}</b></div>
+            <div class="campo"><span>RT</span><b>${pegar(item,["RT"])}</b></div>
+            <div style="font-size:11px; font-weight:bold; color:#a15c00; text-transform:uppercase; margin:12px 0 4px;">Prenda</div>
+            <div class="campo"><span>${pegar(item,["NomePrenda"])}</span><b>Cartão ${pegar(item,["CartaoPrenda"]) || "-"} · ${pegar(item,["NascimentoPrenda"]) || "-"}</b></div>
+            <div style="font-size:11px; font-weight:bold; color:#a15c00; text-transform:uppercase; margin:12px 0 4px;">Peão</div>
+            <div class="campo"><span>${pegar(item,["NomePeao"])}</span><b>Cartão ${pegar(item,["CartaoPeao"]) || "-"} · ${pegar(item,["NascimentoPeao"]) || "-"}</b></div>
+            <div class="campo" style="margin-top:12px; background:#fff3e0; border-radius:6px; padding:8px;"><span>🎵 Música</span><b>${pegar(item,["Musica","Música"]) || "-"}</b></div>
+        `;
+    } else {
+        titulo = pegar(item,["Nomes","Nome","Concorrente"]);
+        corpo = `
+            <div class="campo"><span>Entidade</span><b>${pegar(item,["Entidade"])}</b></div>
+            <div class="campo"><span>Cartão</span><b>${pegar(item,["Cartão","Cartao"])}</b></div>
+            <div class="campo"><span>Nascimento</span><b>${pegar(item,["Nascimento"]) || "-"}</b></div>
+            <div class="campo"><span>Município</span><b>${pegar(item,["Municipio","Município"])}</b></div>
+            <div class="campo"><span>RT</span><b>${pegar(item,["RT"])}</b></div>
+        `;
+    }
+
+    const modal = document.getElementById("modal");
+    modal.innerHTML = `
+        <h2>${titulo}</h2>
+        <div class="sub">${pegar(item,["Categoria"])} · Ordem ${pegar(item,["Ordem"]) || "-"}</div>
+        ${corpo}
+        <div class="botoes-status">
+            <button class="bt-npresente ${cls==='npresente'?'selecionado':''}" data-v="Não presente">Não presente</button>
+            <button class="bt-aguardando ${cls==='aguardando'?'selecionado':''}" data-v="Check-in OK">Check-in</button>
+            <button class="bt-concluido ${cls==='concluido'?'selecionado':''}" data-v="Concluído">Concluído</button>
+        </div>
+        <button id="fechar-modal">Fechar</button>
+    `;
+    modal.querySelectorAll(".botoes-status button").forEach(btn => {
+        btn.onclick = () => enviarAtualizacao(nomeAba, [item._row], btn.dataset.v, item);
+    });
+    document.getElementById("fechar-modal").onclick = fecharModal;
+    document.getElementById("overlay").classList.add("aberto");
+}
+
+function fecharModal(){
+    document.getElementById("overlay").classList.remove("aberto");
+}
+
+// ---------- ENVIAR ATUALIZAÇÃO ----------
+function enviarAtualizacao(aba, linhas, novoStatus, itemLocal, aoTerminar){
+    mostrarToast("Salvando...");
+    fetch(URL_API, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // evita preflight CORS
+        body: JSON.stringify({ aba, rows: linhas, status: novoStatus })
+    })
+    .then(r => r.json())
+    .then(resp => {
+        if (resp.ok){
+            mostrarToast("Status atualizado ✓");
+            if (itemLocal) itemLocal.Status = novoStatus;
+            if (aoTerminar) aoTerminar(); else fecharModal();
+            renderizarLista();
+        } else {
+            mostrarToast("Erro: " + (resp.error || "não foi possível salvar"));
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        mostrarToast("Falha de conexão ao salvar");
+    });
+}
+
+// ---------- INÍCIO ----------
+function iniciar(){
+    montarAbas();
+    carregarDados(true);
+    setInterval(() => carregarDados(false), 20000);
+}
+
+if (document.body.classList.contains("logado")) iniciar();
+</script>
+</body>
+</html>
