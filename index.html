@@ -473,8 +473,7 @@ function abrirDetalhe(item){
         <div class="sub">${pegar(item,["Categoria"])} · Ordem ${pegar(item,["Ordem"]) || "-"}</div>
         ${corpo}
         <div class="botoes-status">
-            <button class="bt-npresente ${cls==='npresente'?'selecionado':''}" data-v="Não presente">Não presente</button>
-            <button class="bt-aguardando ${cls==='aguardando'?'selecionado':''}" data-v="Check-in OK">Check-in</button>
+       <button class="bt-concluido ${cls==='concluido'?'selecionado':''}" data-v="Concluído">Concluído</button>
         </div>
         <button id="fechar-modal">Fechar</button>
     `;
