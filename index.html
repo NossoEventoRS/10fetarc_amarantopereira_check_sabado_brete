@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Conferência de Cartão — GRUPO | BRETE</title>
+<title>Conferência de Cartão — Check-in | SABADO</title>
 <style>
 :root{
     --laranja: #48db7e;
@@ -100,8 +100,7 @@ body.logado #tela-login{ display:none; }
 }
 .badge-npresente{ background:var(--vermelho); }
 .badge-aguardando{ background:var(--amarelo); color:#000; }
-.badge-concluido{ background:var(--verde); }
-
+.badge-concluido {background:var(--verde); }
 #vazio{ text-align:center; color:#a15c00; padding:40px 20px; font-size:14px; }
 
 /* ---------- LEGENDA ---------- */
@@ -164,7 +163,7 @@ body.logado #tela-login{ display:none; }
 <div id="tela-login">
     <img
     src="https://raw.githubusercontent.com/NossoEventoRS/Imagens/refs/heads/main/Logo.png" style="width:20%; height:auto; object-fit:contain;">
-    <h1>Conferência de Cartão<br><P>BRETE</P><small style="font-weight:normal;">Acesso restrito à equipe</small></h1>
+    <h1>Conferência de Cartão<br><small style="font-weight:normal;">Acesso restrito à equipe</small></h1>
     <form id="form-login">
         <input type="password" id="input-senha" placeholder="Senha de acesso" inputmode="numeric" autocomplete="off">
         <div id="erro-login"></div>
@@ -175,7 +174,7 @@ body.logado #tela-login{ display:none; }
 <!-- ===================== APP ===================== -->
 <div id="app">
     <div id="header">
-         <div class="titulo">Conferência de Cartão | SÁBADO 22/08/2026 | BRETE
+        <div class="titulo">Conferência de Cartão | SÁBADO 22/08/2026
             <small>10ª FETARC | CTG Amaranto Pererita - 1ª RT - Alvorada / RS</small>
         </div>
         <button id="btn-sair">Sair</button>
@@ -214,10 +213,12 @@ body.logado #tela-login{ display:none; }
 const URL_API = "https://script.google.com/macros/s/AKfycbwXelxU7JHk5Clra61BgFO6M4RoTi8zGfdToDwNm_B4SP5OLlBGtC5xUJPGegCSXQSZ/exec";
 
 // Senha única da equipe. Troque para a senha real do evento.
-const SENHA_ACESSO = "brete2026";
+const SENHA_ACESSO = "amaranto2026";
 
 // Abas do painel: "Rótulo mostrado" -> "Nome exato da aba na planilha Google".
 const MODALIDADES = {
+    "Declamação": "Declamação",
+    "Dança PAR": "Dança PAR",
     "Grupo": "Grupo"
 };
 
@@ -382,6 +383,7 @@ function renderizarLista(){
 
         const div = document.createElement("div");
         div.className = "item st-" + cls;
+        div.dataset.row = l._row;
         div.innerHTML = `
             <div class="item-info">
                 <div class="item-nome">${ordem ? ordem + " · " : ""}${nomePrincipal}</div>
@@ -392,6 +394,21 @@ function renderizarLista(){
         div.onclick = () => abrirDetalhe(l);
         lista.appendChild(div);
     });
+}
+
+// Atualiza só o card de UM item na lista (sem redesenhar a lista inteira).
+// Muito mais rápido que renderizarLista() em abas com muitas linhas.
+// Se o item não estiver na tela no momento (ex: foi filtrado pela busca),
+// cai de volta pro renderizarLista() completo.
+function atualizarItemVisual(item){
+    const el = document.querySelector('.item[data-row="' + item._row + '"]');
+    if (!el){ renderizarLista(); return; }
+    const status = pegar(item, ["Status"]);
+    const cls = classeStatus(status);
+    el.className = "item st-" + cls;
+    const badge = el.querySelector(".item-badge");
+    badge.className = "item-badge badge-" + (cls || "aguardando");
+    badge.textContent = status || "—";
 }
 
 document.getElementById("busca").addEventListener("input", renderizarLista);
@@ -438,7 +455,7 @@ function abrirDetalhe(item){
             <div class="campo"><span>${pegar(item,["NomePrenda"])}</span><b>Cartão ${pegar(item,["CartaoPrenda"]) || "-"} · ${pegar(item,["NascimentoPrenda"]) || "-"}</b></div>
             <div style="font-size:11px; font-weight:bold; color:#a15c00; text-transform:uppercase; margin:12px 0 4px;">Peão</div>
             <div class="campo"><span>${pegar(item,["NomePeao"])}</span><b>Cartão ${pegar(item,["CartaoPeao"]) || "-"} · ${pegar(item,["NascimentoPeao"]) || "-"}</b></div>
-            <div class="campo" style="margin-top:12px; background:#fff3e0; border-radius:6px; padding:8px;"><span>🎵 Música</span><b>${pegar(item,["Musica","Música"]) || "-"}</b></div>
+            <div class="campo" style="margin-top:12px; background:#fff3e0; border-radius:6px; padding:8px;"><span>🎵 Dança</span><b>${pegar(item,["Musica","Música"]) || "-"}</b></div>
         `;
     } else {
         titulo = pegar(item,["Nomes","Nome","Concorrente"]);
@@ -459,7 +476,6 @@ function abrirDetalhe(item){
         <div class="botoes-status">
             <button class="bt-npresente ${cls==='npresente'?'selecionado':''}" data-v="Não presente">Não presente</button>
             <button class="bt-aguardando ${cls==='aguardando'?'selecionado':''}" data-v="Check-in OK">Check-in</button>
-            <button class="bt-concluido ${cls==='concluido'?'selecionado':''}" data-v="Concluído">Concluído</button>
         </div>
         <button id="fechar-modal">Fechar</button>
     `;
@@ -475,8 +491,18 @@ function fecharModal(){
 }
 
 // ---------- ENVIAR ATUALIZAÇÃO ----------
+// Atualização OTIMISTA: a tela muda na hora (fecha modal, recolore o item),
+// sem esperar o Apps Script responder — que pode levar alguns segundos.
+// A gravação acontece por trás; se falhar, desfaz e avisa.
 function enviarAtualizacao(aba, linhas, novoStatus, itemLocal, aoTerminar){
+    const statusAnterior = itemLocal ? itemLocal.Status : null;
+
+    // aplica na hora, na interface
+    if (itemLocal) itemLocal.Status = novoStatus;
+    if (aoTerminar) aoTerminar(); else fecharModal();
+    if (itemLocal) atualizarItemVisual(itemLocal); else renderizarLista();
     mostrarToast("Salvando...");
+
     fetch(URL_API, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" }, // evita preflight CORS
@@ -486,16 +512,17 @@ function enviarAtualizacao(aba, linhas, novoStatus, itemLocal, aoTerminar){
     .then(resp => {
         if (resp.ok){
             mostrarToast("Status atualizado ✓");
-            if (itemLocal) itemLocal.Status = novoStatus;
-            if (aoTerminar) aoTerminar(); else fecharModal();
-            renderizarLista();
         } else {
+            if (itemLocal) itemLocal.Status = statusAnterior;
+            if (itemLocal) atualizarItemVisual(itemLocal); else renderizarLista();
             mostrarToast("Erro: " + (resp.error || "não foi possível salvar"));
         }
     })
     .catch(err => {
         console.error(err);
-        mostrarToast("Falha de conexão ao salvar");
+        if (itemLocal) itemLocal.Status = statusAnterior;
+        if (itemLocal) atualizarItemVisual(itemLocal); else renderizarLista();
+        mostrarToast("Falha de conexão — não salvou, tente de novo");
     });
 }
 
