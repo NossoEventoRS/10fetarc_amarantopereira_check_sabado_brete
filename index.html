@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Conferência de Cartão — GRUPO | BRETE</title>
+<title>Conferência de Cartão — Check-in | SABADO | BRETE</title>
 <style>
 :root{
     --laranja: #48db7e;
@@ -100,8 +100,7 @@ body.logado #tela-login{ display:none; }
 }
 .badge-npresente{ background:var(--vermelho); }
 .badge-aguardando{ background:var(--amarelo); color:#000; }
-.badge-concluido{ background:var(--verde); }
-
+.badge-concluido {background:var(--verde); }
 #vazio{ text-align:center; color:#a15c00; padding:40px 20px; font-size:14px; }
 
 /* ---------- LEGENDA ---------- */
@@ -141,14 +140,14 @@ body.logado #tela-login{ display:none; }
     border:none; border-radius:8px; font-weight:bold; cursor:pointer;
 }
 #lista-integrantes{ margin-top:14px; border-top:2px solid #f0f0f0; padding-top:10px; }
-.integrante-row{
-    display:flex; align-items:center; justify-content:space-between; gap:8px;
-    padding:8px 0; border-bottom:1px solid #f5f5f5; font-size:12px;
-}
+.integrante-row{ padding:8px 0; border-bottom:1px solid #f5f5f5; font-size:12px; }
 .integrante-row .nome{ font-weight:bold; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .mini-botoes{ display:flex; gap:4px; flex-shrink:0; }
 .mini-botoes button{ width:26px; height:26px; border-radius:50%; border:2px solid #fff; cursor:pointer; }
 .mini-botoes button.ativo{ border-color:var(--preto); }
+
+.integrante-view{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.integrante-view .item-info{ min-width:0; }
 
 #toast{
     position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(100px);
@@ -164,7 +163,7 @@ body.logado #tela-login{ display:none; }
 <div id="tela-login">
     <img
     src="https://raw.githubusercontent.com/NossoEventoRS/Imagens/refs/heads/main/Logo.png" style="width:20%; height:auto; object-fit:contain;">
-    <h1>Conferência de Cartão<br><P>BRETE</P><small style="font-weight:normal;">Acesso restrito à equipe</small></h1>
+    <h1>Conferência de Cartão<br><small style="font-weight:normal;">Acesso restrito à equipe<br>| BRETE |</small></h1>
     <form id="form-login">
         <input type="password" id="input-senha" placeholder="Senha de acesso" inputmode="numeric" autocomplete="off">
         <div id="erro-login"></div>
@@ -175,7 +174,7 @@ body.logado #tela-login{ display:none; }
 <!-- ===================== APP ===================== -->
 <div id="app">
     <div id="header">
-         <div class="titulo">Conferência de Cartão | SÁBADO 22/08/2026 | BRETE
+        <div class="titulo">Conferência de Cartão | SÁBADO 22/08/2026 | BRETE
             <small>10ª FETARC | CTG Amaranto Pererita - 1ª RT - Alvorada / RS</small>
         </div>
         <button id="btn-sair">Sair</button>
@@ -218,6 +217,7 @@ const SENHA_ACESSO = "brete2026";
 
 // Abas do painel: "Rótulo mostrado" -> "Nome exato da aba na planilha Google".
 const MODALIDADES = {
+    "Dança PAR": "Dança PAR",
     "Grupo": "Grupo"
 };
 
@@ -253,6 +253,12 @@ document.getElementById("btn-sair").addEventListener("click", function(){
 // ---------- UTIL ----------
 function normalizar(txt){
     return String(txt || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function esc(s){
+    return String(s == null ? "" : s)
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 
 function pegar(obj, nomes){
@@ -378,10 +384,12 @@ function renderizarLista(){
         if (ehGrupo()) nomePrincipal = entidade;
         else if (ehDancaPar()) nomePrincipal = `${pegar(l,["NomePrenda"])} & ${pegar(l,["NomePeao"])}`;
         else nomePrincipal = pegar(l, ["Nomes","Nome","Concorrente"]);
-        const subtitulo = ehGrupo() ? `${pegar(l,["Integrantes"])} integrantes` : entidade;
+        const categoria = pegar(l, ["Categoria"]);
+        const subtitulo = ehGrupo() ? `${categoria ? categoria + " · " : ""}${pegar(l,["Integrantes"])} integrantes` : (ehDancaPar() ? `${categoria ? categoria + " · " : ""}${entidade}` : entidade);
 
         const div = document.createElement("div");
         div.className = "item st-" + cls;
+        div.dataset.row = l._row;
         div.innerHTML = `
             <div class="item-info">
                 <div class="item-nome">${ordem ? ordem + " · " : ""}${nomePrincipal}</div>
@@ -394,6 +402,21 @@ function renderizarLista(){
     });
 }
 
+// Atualiza só o card de UM item na lista (sem redesenhar a lista inteira).
+// Muito mais rápido que renderizarLista() em abas com muitas linhas.
+// Se o item não estiver na tela no momento (ex: foi filtrado pela busca),
+// cai de volta pro renderizarLista() completo.
+function atualizarItemVisual(item){
+    const el = document.querySelector('.item[data-row="' + item._row + '"]');
+    if (!el){ renderizarLista(); return; }
+    const status = pegar(item, ["Status"]);
+    const cls = classeStatus(status);
+    el.className = "item st-" + cls;
+    const badge = el.querySelector(".item-badge");
+    badge.className = "item-badge badge-" + (cls || "aguardando");
+    badge.textContent = status || "—";
+}
+
 document.getElementById("busca").addEventListener("input", renderizarLista);
 
 // ---------- MODAL DE DETALHE ----------
@@ -401,10 +424,14 @@ function listaIntegrantesHtml(item){
     const membros = item.IntegrantesLista || [];
     if (membros.length === 0) return "";
     return membros.map(m => `
-        <div class="integrante-row">
-            <div class="nome">${m.Nome || ""}</div>
-            <div style="font-size:11px; color:#777; text-align:right; flex-shrink:0;">
-                ${m.Cartao ? "Cartão " + m.Cartao : ""}${m.Nascimento ? " · " + m.Nascimento : ""}${m.Municipio ? " · " + m.Municipio : ""}
+        <div class="integrante-row" data-row="${m._row}">
+            <div class="integrante-view">
+                <div class="item-info">
+                    <div class="nome">${esc(m.Nome)}</div>
+                    <div style="font-size:11px; color:#777;">
+                        ${m.Cartao ? "Cartão " + esc(m.Cartao) : ""}${m.Nascimento ? " · " + esc(m.Nascimento) : ""}${m.Municipio ? " · " + esc(m.Municipio) : ""}
+                    </div>
+                </div>
             </div>
         </div>
     `).join("");
@@ -438,7 +465,7 @@ function abrirDetalhe(item){
             <div class="campo"><span>${pegar(item,["NomePrenda"])}</span><b>Cartão ${pegar(item,["CartaoPrenda"]) || "-"} · ${pegar(item,["NascimentoPrenda"]) || "-"}</b></div>
             <div style="font-size:11px; font-weight:bold; color:#a15c00; text-transform:uppercase; margin:12px 0 4px;">Peão</div>
             <div class="campo"><span>${pegar(item,["NomePeao"])}</span><b>Cartão ${pegar(item,["CartaoPeao"]) || "-"} · ${pegar(item,["NascimentoPeao"]) || "-"}</b></div>
-            <div class="campo" style="margin-top:12px; background:#fff3e0; border-radius:6px; padding:8px;"><span>🎵 Música</span><b>${pegar(item,["Musica","Música"]) || "-"}</b></div>
+            <div class="campo" style="margin-top:12px; background:#fff3e0; border-radius:6px; padding:8px;"><span>🎵 Dança</span><b>${pegar(item,["Musica","Música"]) || "-"}</b></div>
         `;
     } else {
         titulo = pegar(item,["Nomes","Nome","Concorrente"]);
@@ -452,10 +479,11 @@ function abrirDetalhe(item){
     }
 
     const modal = document.getElementById("modal");
+
     modal.innerHTML = `
         <h2>${titulo}</h2>
         <div class="sub">${pegar(item,["Categoria"])} · Ordem ${pegar(item,["Ordem"]) || "-"}</div>
-        ${corpo}
+        <div id="corpo-view">${corpo}</div>
         <div class="botoes-status">
             <button class="bt-concluido ${cls==='concluido'?'selecionado':''}" data-v="Concluído">Concluído</button>
         </div>
@@ -473,8 +501,18 @@ function fecharModal(){
 }
 
 // ---------- ENVIAR ATUALIZAÇÃO ----------
+// Atualização OTIMISTA: a tela muda na hora (fecha modal, recolore o item),
+// sem esperar o Apps Script responder — que pode levar alguns segundos.
+// A gravação acontece por trás; se falhar, desfaz e avisa.
 function enviarAtualizacao(aba, linhas, novoStatus, itemLocal, aoTerminar){
+    const statusAnterior = itemLocal ? itemLocal.Status : null;
+
+    // aplica na hora, na interface
+    if (itemLocal) itemLocal.Status = novoStatus;
+    if (aoTerminar) aoTerminar(); else fecharModal();
+    if (itemLocal) atualizarItemVisual(itemLocal); else renderizarLista();
     mostrarToast("Salvando...");
+
     fetch(URL_API, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" }, // evita preflight CORS
@@ -484,16 +522,17 @@ function enviarAtualizacao(aba, linhas, novoStatus, itemLocal, aoTerminar){
     .then(resp => {
         if (resp.ok){
             mostrarToast("Status atualizado ✓");
-            if (itemLocal) itemLocal.Status = novoStatus;
-            if (aoTerminar) aoTerminar(); else fecharModal();
-            renderizarLista();
         } else {
+            if (itemLocal) itemLocal.Status = statusAnterior;
+            if (itemLocal) atualizarItemVisual(itemLocal); else renderizarLista();
             mostrarToast("Erro: " + (resp.error || "não foi possível salvar"));
         }
     })
     .catch(err => {
         console.error(err);
-        mostrarToast("Falha de conexão ao salvar");
+        if (itemLocal) itemLocal.Status = statusAnterior;
+        if (itemLocal) atualizarItemVisual(itemLocal); else renderizarLista();
+        mostrarToast("Falha de conexão — não salvou, tente de novo");
     });
 }
 
