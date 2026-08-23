@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Conferência de Cartão — Check-in | DOMINGO</title>
+<title>Conferência de Cartão — GRUPO | BRETE | DOMINGO</title>
 <style>
 :root{
     --laranja: #48db7e;
@@ -141,46 +141,14 @@ body.logado #tela-login{ display:none; }
     border:none; border-radius:8px; font-weight:bold; cursor:pointer;
 }
 #lista-integrantes{ margin-top:14px; border-top:2px solid #f0f0f0; padding-top:10px; }
-.integrante-row{ padding:8px 0; border-bottom:1px solid #f5f5f5; font-size:12px; }
+.integrante-row{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:8px 0; border-bottom:1px solid #f5f5f5; font-size:12px;
+}
 .integrante-row .nome{ font-weight:bold; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .mini-botoes{ display:flex; gap:4px; flex-shrink:0; }
 .mini-botoes button{ width:26px; height:26px; border-radius:50%; border:2px solid #fff; cursor:pointer; }
 .mini-botoes button.ativo{ border-color:var(--preto); }
-
-/* ---------- EDIÇÃO/EXCLUSÃO DE INTEGRANTE (aba Grupo) ---------- */
-.integrante-view{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.integrante-view .item-info{ min-width:0; }
-.mini-acoes{ display:flex; gap:4px; flex-shrink:0; }
-.mini-acoes button{
-    border:1px solid #eee; background:#f7f7f7; border-radius:6px;
-    padding:5px 8px; font-size:13px; cursor:pointer; line-height:1;
-}
-.bt-excluir-integrante{ background:#fee2e2; border-color:#fecaca; }
-.integrante-edit{ display:none; flex-direction:column; gap:6px; padding-top:8px; }
-.integrante-edit input{
-    padding:9px; font-size:12px; border:1px solid #ddd; border-radius:6px; width:100%;
-}
-.integrante-edit input:focus{ border-color:var(--laranja-escuro); outline:none; }
-.edit-botoes{ display:flex; gap:6px; margin-top:2px; }
-.edit-botoes button{
-    flex:1; padding:9px; border:none; border-radius:6px; font-size:12px;
-    font-weight:bold; cursor:pointer;
-}
-.bt-salvar-integrante{ background:var(--verde); color:#fff; }
-.bt-cancelar-integrante{ background:#eee; color:#333; }
-
-/* ---------- EDIÇÃO/EXCLUSÃO DE ITEM INTEIRO (demais abas) ---------- */
-#corpo-edit{ margin-top:8px; }
-.campo-edit{ display:flex; flex-direction:column; gap:4px; margin-bottom:10px; font-size:12px; }
-.campo-edit label{ font-weight:bold; color:#555; font-size:11px; text-transform:uppercase; letter-spacing:.3px; }
-.campo-edit input{ padding:9px; border:1px solid #ddd; border-radius:6px; font-size:13px; width:100%; }
-.campo-edit input:focus{ border-color:var(--laranja-escuro); outline:none; }
-.acoes-item{ display:flex; gap:8px; margin-top:12px; }
-.acoes-item button{
-    flex:1; padding:11px; border-radius:8px; border:1px solid #eee;
-    background:#f7f7f7; font-size:12px; font-weight:bold; cursor:pointer;
-}
-.acoes-item .bt-excluir-item-btn{ background:#fee2e2; border-color:#fecaca; color:#7f1d1d; }
 
 #toast{
     position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(100px);
@@ -196,7 +164,7 @@ body.logado #tela-login{ display:none; }
 <div id="tela-login">
     <img
     src="https://raw.githubusercontent.com/NossoEventoRS/Imagens/refs/heads/main/Logo.png" style="width:20%; height:auto; object-fit:contain;">
-    <h1>Conferência de Cartão<br><small style="font-weight:normal;">Acesso restrito à equipe</small></h1>
+    <h1>Conferência de Cartão<br><P>BRETE</P><small style="font-weight:normal;">Acesso restrito à equipe</small></h1>
     <form id="form-login">
         <input type="password" id="input-senha" placeholder="Senha de acesso" inputmode="numeric" autocomplete="off">
         <div id="erro-login"></div>
@@ -207,7 +175,7 @@ body.logado #tela-login{ display:none; }
 <!-- ===================== APP ===================== -->
 <div id="app">
     <div id="header">
-        <div class="titulo">Conferência de Cartão | DOMINGO 23/08/2026
+         <div class="titulo">Conferência de Cartão | DOMINGO 23/08/2026 | BRETE
             <small>10ª FETARC | CTG Amaranto Pererita - 1ª RT - Alvorada / RS</small>
         </div>
         <button id="btn-sair">Sair</button>
@@ -246,11 +214,10 @@ body.logado #tela-login{ display:none; }
 const URL_API = "https://script.google.com/macros/s/AKfycbwL6-o_jAqK9gIlp-uuzcaIwkOYnxuZzCe3ERWdXcN6dpLNkVrZMb5AZGdvPL9eKFdpnQ/exec";
 
 // Senha única da equipe. Troque para a senha real do evento.
-const SENHA_ACESSO = "amaranto2026";
+const SENHA_ACESSO = "brete2026";
 
 // Abas do painel: "Rótulo mostrado" -> "Nome exato da aba na planilha Google".
 const MODALIDADES = {
-    "Intérprete": "Intérprete",
     "Grupo": "Grupo"
 };
 
@@ -286,12 +253,6 @@ document.getElementById("btn-sair").addEventListener("click", function(){
 // ---------- UTIL ----------
 function normalizar(txt){
     return String(txt || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
-function esc(s){
-    return String(s == null ? "" : s)
-        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 
 function pegar(obj, nomes){
@@ -335,9 +296,14 @@ function montarAbas(){
 function carregarDados(mostrarLoading){
     const statusEl = document.getElementById("status-conexao");
     if (mostrarLoading) statusEl.innerText = "Carregando dados...";
-    fetch(URL_API)
+
+    const controle = new AbortController();
+    const tempoLimite = setTimeout(() => controle.abort(), 12000); // não trava esperando pra sempre
+
+    fetch(URL_API, { signal: controle.signal })
         .then(r => r.json())
         .then(resp => {
+            clearTimeout(tempoLimite);
             dadosGlobais = resp;
             statusEl.classList.remove("erro");
             const agora = new Date();
@@ -345,8 +311,11 @@ function carregarDados(mostrarLoading){
             renderizarLista();
         })
         .catch(err => {
+            clearTimeout(tempoLimite);
             statusEl.classList.add("erro");
-            statusEl.innerText = "Falha ao carregar dados. Verifique a internet.";
+            statusEl.innerText = (err.name === "AbortError")
+                ? "Google demorou pra responder — tentando de novo..."
+                : "Falha ao carregar dados. Verifique a internet.";
             console.error(err);
         });
 }
@@ -364,13 +333,24 @@ function ehGrupo(){
     return normalizar(abaAtiva).includes("grupo");
 }
 
+// A aba "Dança PAR" vem com prenda e peão separados em campos próprios
+// (NomePrenda, NomePeao, CartaoPrenda, CartaoPeao, NascimentoPrenda,
+// NascimentoPeao, Musica), já tratados pelo Apps Script.
+function ehDancaPar(){
+    return normalizar(abaAtiva).includes("danca par");
+}
+
 // Junta todos os campos de texto relevantes do item num único texto
 // normalizado, pra busca funcionar em qualquer formato de aba.
 function textoBuscaItem(l){
     return normalizar([
         pegar(l, ["Nomes","Nome","Concorrente"]),
+        pegar(l, ["NomePrenda"]),
+        pegar(l, ["NomePeao"]),
         pegar(l, ["Entidade"]),
-        pegar(l, ["Cartão","Cartao"])
+        pegar(l, ["Cartão","Cartao"]),
+        pegar(l, ["CartaoPrenda"]),
+        pegar(l, ["CartaoPeao"])
     ].join(" "));
 }
 
@@ -397,13 +377,13 @@ function renderizarLista(){
         const categoria = pegar(l, ["Categoria"]);
         let nomePrincipal;
         if (ehGrupo()) nomePrincipal = entidade;
+        else if (ehDancaPar()) nomePrincipal = `${pegar(l,["NomePrenda"])} & ${pegar(l,["NomePeao"])}`;
         else nomePrincipal = pegar(l, ["Nomes","Nome","Concorrente"]);
         const infoBase = ehGrupo() ? `${pegar(l,["Integrantes"])} integrantes` : entidade;
         const subtitulo = categoria ? `${categoria} · ${infoBase}` : infoBase;
 
         const div = document.createElement("div");
         div.className = "item st-" + cls;
-        div.dataset.row = l._row;
         div.innerHTML = `
             <div class="item-info">
                 <div class="item-nome">${ordem ? ordem + " · " : ""}${nomePrincipal}</div>
@@ -416,21 +396,6 @@ function renderizarLista(){
     });
 }
 
-// Atualiza só o card de UM item na lista (sem redesenhar a lista inteira).
-// Muito mais rápido que renderizarLista() em abas com muitas linhas (ex: Intérprete).
-// Se o item não estiver na tela no momento (ex: foi filtrado pela busca),
-// cai de volta pro renderizarLista() completo.
-function atualizarItemVisual(item){
-    const el = document.querySelector('.item[data-row="' + item._row + '"]');
-    if (!el){ renderizarLista(); return; }
-    const status = pegar(item, ["Status"]);
-    const cls = classeStatus(status);
-    el.className = "item st-" + cls;
-    const badge = el.querySelector(".item-badge");
-    badge.className = "item-badge badge-" + (cls || "aguardando");
-    badge.textContent = status || "—";
-}
-
 document.getElementById("busca").addEventListener("input", renderizarLista);
 
 // ---------- MODAL DE DETALHE ----------
@@ -438,128 +403,13 @@ function listaIntegrantesHtml(item){
     const membros = item.IntegrantesLista || [];
     if (membros.length === 0) return "";
     return membros.map(m => `
-        <div class="integrante-row" data-row="${m._row}">
-            <div class="integrante-view">
-                <div class="item-info">
-                    <div class="nome">${esc(m.Nome)}</div>
-                    <div style="font-size:11px; color:#777;">
-                        ${m.Cartao ? "Cartão " + esc(m.Cartao) : ""}${m.Nascimento ? " · " + esc(m.Nascimento) : ""}${m.Municipio ? " · " + esc(m.Municipio) : ""}
-                    </div>
-                </div>
-                <div class="mini-acoes">
-                    <button class="bt-editar-integrante" type="button" title="Editar">✏️</button>
-                    <button class="bt-excluir-integrante" type="button" title="Excluir">🗑️</button>
-                </div>
-            </div>
-            <div class="integrante-edit">
-                <input class="in-nome" value="${esc(m.Nome)}" placeholder="Nome">
-                <input class="in-cartao" value="${esc(m.Cartao)}" placeholder="Cartão">
-                <input class="in-nascimento" value="${esc(m.Nascimento)}" placeholder="Nascimento (dd/mm/aaaa)">
-                <input class="in-municipio" value="${esc(m.Municipio)}" placeholder="Município">
-                <div class="edit-botoes">
-                    <button class="bt-salvar-integrante" type="button">Salvar</button>
-                    <button class="bt-cancelar-integrante" type="button">Cancelar</button>
-                </div>
+        <div class="integrante-row">
+            <div class="nome">${m.Nome || ""}</div>
+            <div style="font-size:11px; color:#777; text-align:right; flex-shrink:0;">
+                ${m.Cartao ? "Cartão " + m.Cartao : ""}${m.Nascimento ? " · " + m.Nascimento : ""}${m.Municipio ? " · " + m.Municipio : ""}
             </div>
         </div>
     `).join("");
-}
-
-// Liga os botões de editar/excluir/salvar/cancelar de cada integrante
-// listado no modal de detalhe (só existe quando a aba ativa é "Grupo").
-function ativarAcoesIntegrantes(){
-    document.querySelectorAll('#lista-integrantes .integrante-row').forEach(linha => {
-        const rowNum = linha.dataset.row;
-        const view = linha.querySelector('.integrante-view');
-        const edit = linha.querySelector('.integrante-edit');
-
-        linha.querySelector('.bt-editar-integrante').onclick = () => {
-            view.style.display = 'none';
-            edit.style.display = 'flex';
-        };
-        linha.querySelector('.bt-cancelar-integrante').onclick = () => {
-            edit.style.display = 'none';
-            view.style.display = 'flex';
-        };
-        linha.querySelector('.bt-salvar-integrante').onclick = () => {
-            const campos = {
-                Nome: linha.querySelector('.in-nome').value.trim(),
-                Cartao: linha.querySelector('.in-cartao').value.trim(),
-                Nascimento: linha.querySelector('.in-nascimento').value.trim(),
-                Municipio: linha.querySelector('.in-municipio').value.trim()
-            };
-            if (!campos.Nome){
-                mostrarToast("O nome não pode ficar vazio");
-                return;
-            }
-            salvarIntegrante(rowNum, campos);
-        };
-        linha.querySelector('.bt-excluir-integrante').onclick = () => {
-            const nome = linha.querySelector('.in-nome').value || "este integrante";
-            if (confirm(`Excluir "${nome}" deste grupo? Essa ação não pode ser desfeita.`)){
-                excluirIntegranteRemoto(rowNum);
-            }
-        };
-    });
-}
-
-function salvarIntegrante(row, campos){
-    mostrarToast("Salvando...");
-    fetch(URL_API, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ acao: "editarIntegrante", row: Number(row), campos })
-    })
-    .then(r => r.json())
-    .then(resp => {
-        if (resp.ok){
-            mostrarToast("Integrante atualizado ✓");
-            fecharModal();
-            carregarDados(false);
-        } else {
-            mostrarToast("Erro: " + (resp.error || "não foi possível salvar"));
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        mostrarToast("Falha de conexão — não salvou, tente de novo");
-    });
-}
-
-function excluirIntegranteRemoto(row){
-    mostrarToast("Excluindo...");
-    fetch(URL_API, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ acao: "excluirIntegrante", row: Number(row) })
-    })
-    .then(r => r.json())
-    .then(resp => {
-        if (resp.ok){
-            mostrarToast("Integrante excluído ✓");
-            fecharModal();
-            carregarDados(false);
-        } else {
-            mostrarToast("Erro: " + (resp.error || "não foi possível excluir"));
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        mostrarToast("Falha de conexão — não excluiu, tente de novo");
-    });
-}
-
-// Monta os inputs de edição do item inteiro (Intérprete — a aba Grupo edita
-// cada integrante à parte, não o item todo).
-function corpoEditHtml(item){
-    return `
-        <div class="campo-edit"><label>Nome</label><input id="ed-nome" value="${esc(pegar(item,["Nomes","Nome","Concorrente"]))}"></div>
-        <div class="campo-edit"><label>Entidade</label><input id="ed-entidade" value="${esc(pegar(item,["Entidade"]))}"></div>
-        <div class="campo-edit"><label>Cartão</label><input id="ed-cartao" value="${esc(pegar(item,["Cartão","Cartao"]))}"></div>
-        <div class="campo-edit"><label>Nascimento</label><input id="ed-nascimento" value="${esc(pegar(item,["Nascimento"]))}" placeholder="dd/mm/aaaa"></div>
-        <div class="campo-edit"><label>Município</label><input id="ed-municipio" value="${esc(pegar(item,["Municipio","Município"]))}"></div>
-        <div class="campo-edit"><label>RT</label><input id="ed-rt" value="${esc(pegar(item,["RT"]))}"></div>
-    `;
 }
 
 function abrirDetalhe(item){
@@ -568,6 +418,7 @@ function abrirDetalhe(item){
     const status = pegar(item, ["Status"]);
     const cls = classeStatus(status);
     const grupo = ehGrupo();
+    const dancaPar = ehDancaPar();
 
     let titulo, corpo;
 
@@ -576,7 +427,20 @@ function abrirDetalhe(item){
         corpo = `
             <div class="campo"><span>Integrantes</span><b>${pegar(item,["Integrantes"])}</b></div>
             <div class="campo"><span>RT</span><b>${pegar(item,["RT"])}</b></div>
+            <div class="campo"><span>Danças</span><b style="text-align:right;">${[pegar(item,["Danca_1"]),pegar(item,["Danca_2"]),pegar(item,["Danca_3"])].filter(Boolean).join(" · ")}</b></div>
             <div id="lista-integrantes"><div style="font-size:11px; font-weight:bold; color:#a15c00; text-transform:uppercase; margin-bottom:4px;">Integrantes</div>${listaIntegrantesHtml(item)}</div>
+        `;
+    } else if (dancaPar){
+        titulo = `${pegar(item,["NomePrenda"])} & ${pegar(item,["NomePeao"])}`;
+        corpo = `
+            <div class="campo"><span>Entidade</span><b>${pegar(item,["Entidade"])}</b></div>
+            <div class="campo"><span>Município</span><b>${pegar(item,["Municipio","Município"])}</b></div>
+            <div class="campo"><span>RT</span><b>${pegar(item,["RT"])}</b></div>
+            <div style="font-size:11px; font-weight:bold; color:#a15c00; text-transform:uppercase; margin:12px 0 4px;">Prenda</div>
+            <div class="campo"><span>${pegar(item,["NomePrenda"])}</span><b>Cartão ${pegar(item,["CartaoPrenda"]) || "-"} · ${pegar(item,["NascimentoPrenda"]) || "-"}</b></div>
+            <div style="font-size:11px; font-weight:bold; color:#a15c00; text-transform:uppercase; margin:12px 0 4px;">Peão</div>
+            <div class="campo"><span>${pegar(item,["NomePeao"])}</span><b>Cartão ${pegar(item,["CartaoPeao"]) || "-"} · ${pegar(item,["NascimentoPeao"]) || "-"}</b></div>
+            <div class="campo" style="margin-top:12px; background:#fff3e0; border-radius:6px; padding:8px;"><span>🎵 Música</span><b>${pegar(item,["Musica","Música"]) || "-"}</b></div>
         `;
     } else {
         titulo = pegar(item,["Nomes","Nome","Concorrente"]);
@@ -590,32 +454,13 @@ function abrirDetalhe(item){
     }
 
     const modal = document.getElementById("modal");
-    const corpoEdit = !grupo ? `
-        <div id="corpo-edit" style="display:none;">
-            ${corpoEditHtml(item)}
-            <div class="edit-botoes">
-                <button id="bt-salvar-item" type="button" class="bt-salvar-integrante">Salvar</button>
-                <button id="bt-cancelar-item" type="button" class="bt-cancelar-integrante">Cancelar</button>
-            </div>
-        </div>
-    ` : "";
-    const acoesItem = !grupo ? `
-        <div class="acoes-item">
-            <button id="bt-editar-item" type="button">✏️ Editar informações</button>
-            <button id="bt-excluir-item" type="button" class="bt-excluir-item-btn">🗑️ Excluir</button>
-        </div>
-    ` : "";
-
     modal.innerHTML = `
         <h2>${titulo}</h2>
         <div class="sub">${pegar(item,["Categoria"])} · Ordem ${pegar(item,["Ordem"]) || "-"}</div>
-        <div id="corpo-view">${corpo}</div>
-        ${corpoEdit}
+        ${corpo}
         <div class="botoes-status">
-            <button class="bt-npresente ${cls==='npresente'?'selecionado':''}" data-v="Não presente">Não presente</button>
-            <button class="bt-aguardando ${cls==='aguardando'?'selecionado':''}" data-v="Check-in OK">Check-in</button>
+            <button class="bt-concluido ${cls==='concluido'?'selecionado':''}" data-v="Concluído">Concluído</button>
         </div>
-        ${acoesItem}
         <button id="fechar-modal">Fechar</button>
     `;
     modal.querySelectorAll(".botoes-status button").forEach(btn => {
@@ -623,89 +468,6 @@ function abrirDetalhe(item){
     });
     document.getElementById("fechar-modal").onclick = fecharModal;
     document.getElementById("overlay").classList.add("aberto");
-
-    if (grupo) ativarAcoesIntegrantes();
-
-    if (!grupo){
-        const corpoViewEl = document.getElementById("corpo-view");
-        const corpoEditEl = document.getElementById("corpo-edit");
-
-        document.getElementById("bt-editar-item").onclick = () => {
-            corpoViewEl.style.display = "none";
-            corpoEditEl.style.display = "block";
-        };
-        document.getElementById("bt-cancelar-item").onclick = () => {
-            corpoEditEl.style.display = "none";
-            corpoViewEl.style.display = "block";
-        };
-        document.getElementById("bt-salvar-item").onclick = () => {
-            const campos = {
-                Nome: document.getElementById("ed-nome").value.trim(),
-                Entidade: document.getElementById("ed-entidade").value.trim(),
-                Cartao: document.getElementById("ed-cartao").value.trim(),
-                Nascimento: document.getElementById("ed-nascimento").value.trim(),
-                Municipio: document.getElementById("ed-municipio").value.trim(),
-                RT: document.getElementById("ed-rt").value.trim()
-            };
-            if (!campos.Nome){
-                mostrarToast("O nome não pode ficar vazio");
-                return;
-            }
-            salvarItem(nomeAba, item._row, campos);
-        };
-        document.getElementById("bt-excluir-item").onclick = () => {
-            if (confirm(`Excluir "${titulo}"? Essa ação não pode ser desfeita.`)){
-                excluirItemRemoto(nomeAba, item._row);
-            }
-        };
-    }
-}
-
-// ---------- EDITAR/EXCLUIR ITEM INTEIRO (Intérprete) ----------
-function salvarItem(aba, row, campos){
-    mostrarToast("Salvando...");
-    fetch(URL_API, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ acao: "editarItem", aba, row: Number(row), campos })
-    })
-    .then(r => r.json())
-    .then(resp => {
-        if (resp.ok){
-            mostrarToast("Dados atualizados ✓");
-            fecharModal();
-            carregarDados(false);
-        } else {
-            mostrarToast("Erro: " + (resp.error || "não foi possível salvar"));
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        mostrarToast("Falha de conexão — não salvou, tente de novo");
-    });
-}
-
-function excluirItemRemoto(aba, row){
-    mostrarToast("Excluindo...");
-    fetch(URL_API, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ acao: "excluirItem", aba, row: Number(row) })
-    })
-    .then(r => r.json())
-    .then(resp => {
-        if (resp.ok){
-            mostrarToast("Excluído ✓");
-            fecharModal();
-            carregarDados(false);
-        } else {
-            mostrarToast("Erro: " + (resp.error || "não foi possível excluir"));
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        mostrarToast("Falha de conexão — não excluiu, tente de novo");
-    });
 }
 
 function fecharModal(){
@@ -713,18 +475,8 @@ function fecharModal(){
 }
 
 // ---------- ENVIAR ATUALIZAÇÃO ----------
-// Atualização OTIMISTA: a tela muda na hora (fecha modal, recolore o item),
-// sem esperar o Apps Script responder — que pode levar alguns segundos.
-// A gravação acontece por trás; se falhar, desfaz e avisa.
 function enviarAtualizacao(aba, linhas, novoStatus, itemLocal, aoTerminar){
-    const statusAnterior = itemLocal ? itemLocal.Status : null;
-
-    // aplica na hora, na interface
-    if (itemLocal) itemLocal.Status = novoStatus;
-    if (aoTerminar) aoTerminar(); else fecharModal();
-    if (itemLocal) atualizarItemVisual(itemLocal); else renderizarLista();
     mostrarToast("Salvando...");
-
     fetch(URL_API, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" }, // evita preflight CORS
@@ -734,17 +486,16 @@ function enviarAtualizacao(aba, linhas, novoStatus, itemLocal, aoTerminar){
     .then(resp => {
         if (resp.ok){
             mostrarToast("Status atualizado ✓");
+            if (itemLocal) itemLocal.Status = novoStatus;
+            if (aoTerminar) aoTerminar(); else fecharModal();
+            renderizarLista();
         } else {
-            if (itemLocal) itemLocal.Status = statusAnterior;
-            if (itemLocal) atualizarItemVisual(itemLocal); else renderizarLista();
             mostrarToast("Erro: " + (resp.error || "não foi possível salvar"));
         }
     })
     .catch(err => {
         console.error(err);
-        if (itemLocal) itemLocal.Status = statusAnterior;
-        if (itemLocal) atualizarItemVisual(itemLocal); else renderizarLista();
-        mostrarToast("Falha de conexão — não salvou, tente de novo");
+        mostrarToast("Falha de conexão ao salvar");
     });
 }
 
